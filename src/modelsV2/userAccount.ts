@@ -11,21 +11,32 @@ class UserAccount {
 
   public static async getUser(id: number): Promise<User> {
     const user = await db(this.table).where('id', id).first();
-    // return JSON.parse(user);
+    return user;
+  }
+
+  public static async getUserByEmail(email: string): Promise<User> {
+    const user = await db(this.table).where('email', email).first();
     return user;
   }
 
   public static async createUser(user: UserWithoutId): Promise<User[]> {
-    const addedUser = await db(UserAccount.table).insert(user, ['id', 'name', 'email']);
+    try{
+    const addedUser = await db(UserAccount.table).insert(user, ['id', 'name', 'email','password']);
     return addedUser;
+    }
+    catch(e:any){
+      console.log('got error: ',e.detail)
+      const addedUser:User[]=[]
+      return addedUser;
+    }
   }
   public static async updateUser(user: User): Promise<User[]> {
-    const updatedUser = await db(this.table).where('id', user.id).update(user, ['id', 'email', 'name']);
+    const updatedUser = await db(this.table).where('id', user.id).update(user, ['id', 'email', 'name','password']);
     return updatedUser;
   }
 
   public static async deleteUser(id: number): Promise<User[]> {
-    const deletedUser = await db(this.table).where('id', id).del(['id', 'name', 'email']);
+    const deletedUser = await db(this.table).where('id', id).del(['id', 'name', 'email','password']);
 
     const users = await db(this.table).select();
     console.log('after deletion', deletedUser);
