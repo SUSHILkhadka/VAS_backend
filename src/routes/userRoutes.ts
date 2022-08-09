@@ -7,5 +7,4 @@ router.get('/:userId', userController.getUser); // when logged in we pass this u
 router.post('/', userController.createUser); //for registerring or creating new user.
 router.put('/:userId', userController.updateUser); // for changing name and editing of userId ,update user.
 router.delete('/:userId', userController.deleteUser);
-
 export default router;

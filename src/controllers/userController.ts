@@ -13,20 +13,23 @@ export const getUser = (req: Request, res: Response, next: NextFunction) => {
   console.log('id===', id);
   userService.getUser(+id).then((data) => res.json(data));
 };
+export const login = (req: Request, res: Response, next: NextFunction) => {
+  const {email,password} = req.body;
+  userService.login(email,password).then((data) => res.json(data));
+};
 export const createUser = (req: Request, res: Response, next: NextFunction) => {
   console.log('req.body==', req.body);
-  const { name, email } = req.body;
-  console.log('{name,email}==', { name, email });
-  userService.createUser({ name, email }).then((data) => res.json(data));
+  const { name, email,password } = req.body;
+  console.log('{name,email,password}==', { name, email,password });
+  userService.createUser({ name, email,password }).then((data) => res.json(data));
 };
 export const updateUser = (req: Request, res: Response, next: NextFunction) => {
-  const { name, email } = req.body;
+  const { name, email,password } = req.body;
   const { userId } = req.params;
-
-  if (!userId || !name || !email) {
+  if (!userId || !name || !email || !password) {
     logger.error('data missing');
   }
-  userService.updateUser({ name, email, id: +userId }).then((data) => res.json(data));
+  userService.updateUser({ name, email, id: +userId,password }).then((data) => res.json(data));
 };
 
 export const deleteUser = (req: Request, res: Response, next: NextFunction) => {
