@@ -1,3 +1,3 @@
-export default  interface Token{
-    accessToken: string;
+export default interface Token {
+  accessToken: string;
 }
