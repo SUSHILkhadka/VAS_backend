@@ -1,9 +1,9 @@
-import Success from '../domain/Success';
+import IAppointment, { IAppointmentToInsert } from '../domain/IAppointment';
+import Success from '../domain/ISuccess';
 import logger from '../misc/logger';
-import Appointment, { AppointmentWithoutId } from '../domain/Appointment';
-import AppointmentModel from '../modelsV2/appointmentModel';
+import AppointmentModel from '../models/appointmentModel';
 
-export const getAllAppointments = async (): Promise<Success<Appointment[]>> => {
+export const getAllAppointments = async (): Promise<Success<IAppointment[]>> => {
   logger.info('getting all appointments . In appointmentService');
   const apointments = await AppointmentModel.getAllAppointments();
 
@@ -12,13 +12,13 @@ export const getAllAppointments = async (): Promise<Success<Appointment[]>> => {
     message: 'all appointments fetched successfully. In appointmentService.',
   };
 };
-export const getAppointment = async (id: number): Promise<Success<Appointment>> => {
+export const getAppointment = async (id: number): Promise<Success<IAppointment>> => {
   logger.info(`getting a appointment by id=${id}. In appointmentService`);
   let apointment;
   try {
     apointment = await AppointmentModel.getAppointment(+id);
   } catch {
-    console.log('not found');
+    throw new Error("couldnot get appointment")
   }
 
   return {
@@ -27,7 +27,7 @@ export const getAppointment = async (id: number): Promise<Success<Appointment>> 
   };
 };
 
-export const createAppointment = async (body: AppointmentWithoutId): Promise<Success<Appointment>> => {
+export const createAppointment = async (body: IAppointmentToInsert): Promise<Success<IAppointment>> => {
   logger.info('adding a appointment by increasing id. In appointmentService');
   const apointment = await AppointmentModel.createAppointment(body);
   logger.info('added a Appointment sucess. In appointmentService');
@@ -37,7 +37,7 @@ export const createAppointment = async (body: AppointmentWithoutId): Promise<Suc
   };
 };
 
-export const updateAppointment = async (body: Appointment): Promise<Success<Appointment>> => {
+export const updateAppointment = async (body: IAppointment): Promise<Success<IAppointment>> => {
   logger.info(`updating a appointment by  id=${body.id}. In appointmentService`);
   const appointment = await AppointmentModel.updateAppointment(body);
   logger.info('updated a Appointment sucess. In appointmentService');
@@ -47,7 +47,7 @@ export const updateAppointment = async (body: Appointment): Promise<Success<Appo
   };
 };
 
-export const deleteAppointment = async (id: number): Promise<Success<Appointment>> => {
+export const deleteAppointment = async (id: number): Promise<Success<IAppointment>> => {
   logger.info(`deleting a appointment by  id=${id}. In appointmentService`);
   const appointment = await AppointmentModel.deleteAppointment(id);
   logger.info('deleted a Appointment sucess. In appointmentService');

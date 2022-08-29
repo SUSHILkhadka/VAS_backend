@@ -3,6 +3,8 @@ import logger from './misc/logger';
 import appRouter from './routes/index';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import errorHandler from './middlewares/errorHandler';
+import { notFound } from './middlewares/notFound';
 
 dotenv.config();
 const app: Application = express();
@@ -14,6 +16,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use(appRouter);
+app.use(notFound);
+app.use(errorHandler);
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   logger.info(`running at port ${PORT}`);

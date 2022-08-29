@@ -1,5 +1,5 @@
 import db from '../db/db';
-import { Patient, PatientWithoutId } from '../domain/Patient';
+import { IPatient, IPatientToInsert } from '../domain/IPatient';
 
 class PatientModel {
   public static table = 'patient';
@@ -23,33 +23,29 @@ class PatientModel {
     return patients;
   }
 
-  public static async getPatient(id: number): Promise<Patient> {
+  public static async getPatient(id: number): Promise<IPatient> {
     const patient = await db(this.table).where('id', id).first();
     return patient;
   }
 
-  public static async createPatient(patient: PatientWithoutId): Promise<Patient[]> {
-    try {
+  public static async createPatient(patient: IPatientToInsert): Promise<IPatient> {
       const addedpatient = await db(this.table).insert(patient, this.allColumnsArray);
-      return addedpatient;
-    } catch (e: any) {
-      console.log('got error: ', e.detail);
-      return e.detail;
-    }
+      return addedpatient[0];
+ 
   }
 
-  public static async updatePatient(patient: Patient): Promise<Patient[]> {
+  public static async updatePatient(patient: IPatient): Promise<IPatient> {
     const updatedpatient = await db(this.table).where('id', patient.id).update(patient, this.allColumnsArray);
     console.log('input=', patient, 'outptut=', updatedpatient);
-    return updatedpatient;
+    return updatedpatient[0];
   }
 
-  public static async deletePatient(id: number): Promise<Patient[]> {
+  public static async deletePatient(id: number): Promise<IPatient> {
     const deletedpatient = await db(this.table).where('id', id).del(this.allColumnsArray);
 
     const patients = await db(this.table).select();
     console.log('after deletion', deletedpatient); 
-    return patients;
+    return patients[0];
   }
 }
 

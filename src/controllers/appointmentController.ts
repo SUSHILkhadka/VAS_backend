@@ -1,38 +1,68 @@
-// basically controller= promise handler
-import { NextFunction, Request, Response } from 'express';
-import logger from '../misc/logger';
-import * as AppointmentService from '../services/appointmentService';
+import { NextFunction, Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import IRequestWithTokenData from "../domain/IRequestWithTokenData";
+import RequestWithTokenData from "../domain/IRequestWithTokenData";
+import CustomError from "../misc/CustomError";
+import logger from "../misc/logger";
+import * as AppointmentService from "../services/appointmentService";
 
-export const getAllAppointments = (req: Request, res: Response, next: NextFunction) => {
-  AppointmentService.getAllAppointments().then((data) => res.json(data));
+export const getAllAppointments = (
+  req: RequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
+  // if (req.isAdmin) {
+    AppointmentService.getAllAppointments().then((data) => res.json(data));
+  // } else {
+  //   return next(new CustomError("not authorized", StatusCodes.UNAUTHORIZED));
+  // }
 };
 
-export const getAppointment = (req: Request, res: Response, next: NextFunction) => {
+export const getAppointment = (
+  req: IRequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
   const id = req.params.AppointmentId;
-  console.log('req.params==', req.params);
-  console.log('id===', id);
-  AppointmentService.getAppointment(+id).then((data) => res.json(data));
+  if (req.isAdmin)
+    AppointmentService.getAppointment(+id)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  else if (req.userId)
+    AppointmentService.getAppointment(+req.userId)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  else return next(new CustomError("bad request", StatusCodes.BAD_REQUEST));
 };
-export const createAppointment = (req: Request, res: Response, next: NextFunction) => {
-  console.log('req.body==', req.body);
-  const { email, siteLocation, serviceName, firstDoseDate, firstDoseTime } = req.body;
-  console.log('{email,siteLocation,...}==', { email, siteLocation, serviceName, firstDoseDate, firstDoseTime });
-  AppointmentService.createAppointment({ email, siteLocation, serviceName, firstDoseDate, firstDoseTime }).then(
-    (data) => res.json(data)
-  );
-};
-export const updateAppointment = (req: Request, res: Response, next: NextFunction) => {
-  console.log('req.body==', req.body);
-  const { email, siteLocation, serviceName, firstDoseDate, firstDoseTime } = req.body;
-  const { appointmentId } = req.params;
-  console.log('{email,siteLocation,...}==', {
-    id: appointmentId,
+export const createAppointment = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log("req.body==", req.body);
+  const { email, siteLocation, serviceName, firstDoseDate, firstDoseTime } =
+    req.body;
+
+  AppointmentService.createAppointment({
     email,
     siteLocation,
     serviceName,
     firstDoseDate,
     firstDoseTime,
-  });
+  })
+    .then((data) => res.json(data))
+    .catch((err) => next(err));
+};
+export const updateAppointment = (
+  req: RequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log("req.body==", req.body);
+  const { email, siteLocation, serviceName, firstDoseDate, firstDoseTime } =
+    req.body;
+  const { appointmentId } = req.params;
+
   AppointmentService.updateAppointment({
     id: appointmentId,
     email,
@@ -40,14 +70,22 @@ export const updateAppointment = (req: Request, res: Response, next: NextFunctio
     serviceName,
     firstDoseDate,
     firstDoseTime,
-  }).then((data) => res.json(data));
+  })
+    .then((data) => res.json(data))
+    .catch((err) => next(err));
 };
 
-export const deleteAppointment = (req: Request, res: Response, next: NextFunction) => {
-  console.log('req.body==', req.body);
+export const deleteAppointment = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log("req.body==", req.body);
   const { appointmentId } = req.params;
   if (!appointmentId) {
-    logger.error('date missing');
+    logger.error("date missing");
   }
-  AppointmentService.deleteAppointment(+appointmentId).then((data) => res.json(data));
+  AppointmentService.deleteAppointment(+appointmentId)
+    .then((data) => res.json(data))
+    .catch((err) => next(err));
 };

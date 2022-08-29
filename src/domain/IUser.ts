@@ -1,13 +1,15 @@
-interface User {
+interface IUser {
   id: number;
   name: string;
   email: string;
   password: string;
+  isAdmin?: boolean;
 }
-export default User;
+export default IUser;
 
-export interface UserWithoutId {
+export interface IUserToInsert {
   name: string;
   email: string;
   password: string;
+  isAdmin?: boolean;
 }
