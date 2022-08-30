@@ -7,13 +7,14 @@ import patientRouter from './patientRoutes';
 import userRouter from './userRoutes';
 import appointmentRouter from './appointmentRoutes';
 import vaccineRouter from './vaccineRoutes';
+import uploadRouter from './uploadRouter';
 import authenticate from '../middlewares/authenticate';
 
 const router = Router();
 router.use('/register', registerRouter);
 router.use('/login', loginRouter);
 router.use('/token', tokenRouter);
-
+router.use('/upload', uploadRouter);
 router.use(authenticate)
 router.use('/logout', logoutRouter);
 router.use('/patient', patientRouter);

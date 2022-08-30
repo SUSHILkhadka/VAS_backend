@@ -3,18 +3,6 @@ import IVaccine, { IVaccineToInsert } from "../domain/IVaccine";
 
 class VaccineModel {
   public static table = "vaccine";
-  public static allColumnsArray = [
-    "id",
-    "serviceName",
-    "siteLocation",
-    "startDate",
-    "endDate",
-    "doseType",
-    "gender",
-    "age",
-    "ethinicity",
-  ];
-
   public static async getAllVaccines(): Promise<IVaccine[]> {
     const vaccines = await db(this.table).select();
     return vaccines;

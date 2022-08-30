@@ -41,6 +41,7 @@ export const createPatient = (
     addressStreet,
     paymentMethod,
     insuranceProvider,
+    photoUrl
   } = req.body;
   patientService
     .createPatient({
@@ -55,6 +56,8 @@ export const createPatient = (
       addressStreet,
       paymentMethod,
       insuranceProvider,
+      photoUrl
+
     })
     .then((data) => res.json(data))
     .catch((err) => next(err));
@@ -77,6 +80,7 @@ export const updatePatient = (
     addressStreet,
     paymentMethod,
     insuranceProvider,
+    photoUrl
   } = req.body;
 
   const { patientId } = req.params;
@@ -100,6 +104,7 @@ export const updatePatient = (
         addressStreet,
         paymentMethod,
         insuranceProvider,
+        photoUrl
       })
       .then((data) => res.json(data))
       .catch((err) => next(err));
@@ -118,6 +123,7 @@ export const updatePatient = (
         addressStreet,
         paymentMethod,
         insuranceProvider,
+        photoUrl
       })
       .then((data) => res.json(data))
       .catch((err) => next(err));

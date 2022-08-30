@@ -14,6 +14,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('addressStreet');
     table.string('paymentMethod');
     table.string('insuranceProvider');
+    table.string('photoUrl');
   });
 }
 

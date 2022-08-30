@@ -33,6 +33,7 @@ class UserAccount {
       return e.detail;
     }
   }
+
   public static async updateUser(user: IUser): Promise<IUser> {
     const updatedUser = await db(this.table)
       .where("id", user.id)
