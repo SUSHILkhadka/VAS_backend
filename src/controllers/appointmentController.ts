@@ -26,8 +26,15 @@ export const createAppointment = (
   res: Response,
   next: NextFunction
 ) => {
-  const { email, siteLocation, serviceName, firstDoseDate, firstDoseTime } =
-    req.body;
+  const {
+    email,
+    siteLocation,
+    serviceName,
+    firstDoseDate,
+    firstDoseTime,
+    secondDoseDate,
+    secondDoseTime,
+  } = req.body;
 
   AppointmentService.createAppointment({
     email: req.isAdmin ? email : req.email,
@@ -35,6 +42,8 @@ export const createAppointment = (
     serviceName,
     firstDoseDate,
     firstDoseTime,
+    secondDoseDate,
+    secondDoseTime,
   })
     .then((data) => res.json(data))
     .catch((err) => next(err));
@@ -45,8 +54,15 @@ export const updateAppointment = (
   res: Response,
   next: NextFunction
 ) => {
-  const { email, siteLocation, serviceName, firstDoseDate, firstDoseTime } =
-    req.body;
+  const {
+    email,
+    siteLocation,
+    serviceName,
+    firstDoseDate,
+    firstDoseTime,
+    secondDoseDate,
+    secondDoseTime,
+  } = req.body;
   const { appointmentId } = req.params;
   if (req.isAdmin && !appointmentId) {
     return next(new CustomError("id in url missing", StatusCodes.BAD_REQUEST));
@@ -59,6 +75,8 @@ export const updateAppointment = (
       serviceName,
       firstDoseDate,
       firstDoseTime,
+      secondDoseDate,
+      secondDoseTime,
     })
       .then((data) => res.json(data))
       .catch((err) => next(err));
@@ -70,6 +88,8 @@ export const updateAppointment = (
       serviceName,
       firstDoseDate,
       firstDoseTime,
+      secondDoseDate,
+      secondDoseTime,
     })
       .then((data) => res.json(data))
       .catch((err) => next(err));

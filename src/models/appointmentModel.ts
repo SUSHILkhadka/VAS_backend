@@ -23,8 +23,8 @@ class AppointmentModel {
   public static async updateAppointment(appointment: IAppointment): Promise<IAppointment> {
     const updatedAppointment = await db(this.table)
       .where({'id': appointment.id})
-      .update(appointment).returning('*').first();
-    return updatedAppointment;
+      .update(appointment).returning('*');
+    return updatedAppointment[0];
   }
   public static async updateAppointmentByTokenEmail(appointment: IAppointment): Promise<IAppointment> {
     const updatedAppointment = await db(this.table)
