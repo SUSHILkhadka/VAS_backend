@@ -34,14 +34,14 @@ export const login = async (
 
   //valid user
   const accessToken = jwt.sign(
-    { id: user.id, name: user.id, email: user.email },
+    { id: user.id, isAdmin: user.isAdmin, email: user.email },
     process.env.JWT_SECRET as string,
     {
       expiresIn: EXPIRY_TIME,
     }
   );
   const refreshToken = jwt.sign(
-    { id: user.id, name: user.id, email: user.email },
+    { id: user.id, isAdmin: user.isAdmin, email: user.email },
     process.env.JWT_TOKEN_SECRET as string
   );
 
@@ -85,9 +85,9 @@ export const getNewAccessToken = async (
       refreshToken,
       process.env.JWT_TOKEN_SECRET as string
     )) as IDataInToken;
-    const { userId, isAdmin } = dataAtToken;
+    const { userId,email, isAdmin } = dataAtToken;
     const newAccessToken = jwt.sign(
-      { userId, isAdmin },
+      { userId,email, isAdmin },
       process.env.JWT_SECRET as string,
       { expiresIn: EXPIRY_TIME }
     );

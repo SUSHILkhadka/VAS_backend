@@ -1,8 +1,8 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 import { StatusCodes } from "http-status-codes";
+import IRequestWithTokenData from "../domain/IRequestWithTokenData";
 import RequestWithTokenData from "../domain/IRequestWithTokenData";
 import CustomError from "../misc/CustomError";
-import logger from "../misc/logger";
 import * as patientService from "../services/patientService";
 
 export const getAllPatients = (
@@ -10,25 +10,22 @@ export const getAllPatients = (
   res: Response,
   next: NextFunction
 ) => {
-  // if (req.isAdmin) {
-    patientService.getAllPatients().then((data) => res.json(data)).catch((err)=>next(err));
-  // } else if (!req.isAdmin && req.userId) {
-  //   patientService.getPatient(+req.userId).then((data) => res.json(data)).catch((err)=>next(err));
-  // } else {
-  //   return next(new CustomError('getting all patient failed',StatusCodes.BAD_REQUEST))
-  // }
-};
-
-export const getPatient = (req: Request, res: Response, next: NextFunction) => {
-  const id = req.params.patientId;
-  if(!id){
-    return next(new CustomError("no patient id in url",StatusCodes.BAD_REQUEST))
+  if (req.isAdmin) {
+    patientService
+      .getAllPatients()
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  } else if (req.email) {
+    patientService
+      .getAllPatientsByEmail(req.email)
+      .then((data) => res.json(data));
+  } else {
+    return next(new CustomError("not authorized", StatusCodes.UNAUTHORIZED));
   }
-  patientService.getPatient(+id).then((data) => res.json(data)).catch((err)=>next(err));
 };
 
 export const createPatient = (
-  req: Request,
+  req: IRequestWithTokenData,
   res: Response,
   next: NextFunction
 ) => {
@@ -45,19 +42,6 @@ export const createPatient = (
     paymentMethod,
     insuranceProvider,
   } = req.body;
-  console.log("{name,email,password}==", {
-    firstName,
-    secondName,
-    birthDate,
-    ethnicity,
-    gender,
-    email,
-    addressState,
-    addressCity,
-    addressStreet,
-    paymentMethod,
-    insuranceProvider,
-  });
   patientService
     .createPatient({
       firstName,
@@ -65,14 +49,15 @@ export const createPatient = (
       birthDate,
       ethnicity,
       gender,
-      email,
+      email: req.isAdmin ? email : req.email,
       addressState,
       addressCity,
       addressStreet,
       paymentMethod,
       insuranceProvider,
     })
-    .then((data) => res.json(data)).catch((err)=>next(err));
+    .then((data) => res.json(data))
+    .catch((err) => next(err));
 };
 
 export const updatePatient = (
@@ -93,39 +78,73 @@ export const updatePatient = (
     paymentMethod,
     insuranceProvider,
   } = req.body;
-  
+
   const { patientId } = req.params;
   if (!patientId || !firstName || !email || (!req.isAdmin && req.userId)) {
-    logger.error("data missing");
-    next();
+    return next(
+      new CustomError("required data fields missing", StatusCodes.BAD_REQUEST)
+    );
   }
-  patientService
-    .updatePatient({
-      id: req.isAdmin?+patientId:(req.userId?req.userId:0),
-      firstName,
-      secondName,
-      birthDate,
-      ethnicity,
-      gender,
-      email,
-      addressState,
-      addressCity,
-      addressStreet,
-      paymentMethod,
-      insuranceProvider,
-    })
-    .then((data) => res.json(data)).catch((err)=>next(err));
+  if (req.isAdmin) {
+    patientService
+      .updatePatient({
+        id: +patientId,
+        firstName,
+        secondName,
+        birthDate,
+        ethnicity,
+        gender,
+        email,
+        addressState,
+        addressCity,
+        addressStreet,
+        paymentMethod,
+        insuranceProvider,
+      })
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  } else if (req.email) {
+    patientService
+      .updatePatientByTokenEmail({
+        id: +patientId,
+        firstName,
+        secondName,
+        birthDate,
+        ethnicity,
+        gender,
+        email: req.email,
+        addressState,
+        addressCity,
+        addressStreet,
+        paymentMethod,
+        insuranceProvider,
+      })
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  } else {
+    return next(new CustomError("invalid request", StatusCodes.BAD_REQUEST));
+  }
 };
 
 export const deletePatient = (
-  req: Request,
+  req: IRequestWithTokenData,
   res: Response,
   next: NextFunction
 ) => {
   const { patientId } = req.params;
 
-  if (!patientId) {
-    logger.error("data missing");
+  if (req.isAdmin && !patientId) {
+    return next(new CustomError("id in url missing", StatusCodes.BAD_REQUEST));
   }
-  patientService.deletePatient(+patientId).then((data) => res.json(data)).catch((err)=>next(err));
+  if (req.isAdmin)
+    patientService
+      .deletePatient(+patientId)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  else if (req.email)
+    patientService
+      .deletePatientByTokenEmail(+patientId, req.email)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  else return next(new CustomError("invalid request", StatusCodes.BAD_REQUEST));
 };

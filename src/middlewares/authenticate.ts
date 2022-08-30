@@ -10,6 +10,7 @@ const authenticate = async (req: RequestWithTokenData, res: Response, next: Next
     const datAtToken = await jwt.verify(accesToken as string, process.env.JWT_SECRET as string) as IDataInToken;
     if (datAtToken){ 
       req.userId=datAtToken.userId;
+      req.email=datAtToken.email
       req.isAdmin=datAtToken.isAdmin;
      return next();
     }

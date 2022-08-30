@@ -1,33 +1,23 @@
-// basically controller= promise handler
-import { NextFunction, Request, Response } from 'express';
-import logger from '../misc/logger';
-import * as VaccineService from '../services/vaccineService';
-export const getAllVaccines = (req: Request, res: Response, next: NextFunction) => {
-  VaccineService.getAllVaccines().then((data) => res.json(data)).catch((err)=>next(err));
+import { NextFunction, Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import IRequestWithTokenData from "../domain/IRequestWithTokenData";
+import CustomError from "../misc/CustomError";
+import * as VaccineService from "../services/vaccineService";
+export const getAllVaccines = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  VaccineService.getAllVaccines()
+    .then((data) => res.json(data))
+    .catch((err) => next(err));
 };
-
-export const getVaccine = (req: Request, res: Response, next: NextFunction) => {
-  const id = req.params.vaccineId;
-  VaccineService.getVaccine(+id).then((data) => res.json(data)).catch((err)=>next(err));
-};
-export const createVaccine = (req: Request, res: Response, next: NextFunction) => {
-  const { siteLocation, serviceName, startDate, endDate, doseType, gender, age, ethinicity } = req.body;
-  VaccineService.createVaccine({
-    siteLocation,
-    serviceName,
-    startDate,
-    endDate,
-    doseType,
-    gender,
-    age: +age,
-    ethinicity,
-  }).then((data) => res.json(data)).catch((err)=>next(err));
-};
-export const updateVaccine = (req: Request, res: Response, next: NextFunction) => {
-  const { siteLocation, serviceName, startDate, endDate, doseType, gender, age, ethinicity } = req.body;
-  const { vaccineId } = req.params;
-  VaccineService.updateVaccine({
-    id: +vaccineId,
+export const createVaccine = (
+  req: IRequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
     siteLocation,
     serviceName,
     startDate,
@@ -36,13 +26,70 @@ export const updateVaccine = (req: Request, res: Response, next: NextFunction) =
     gender,
     age,
     ethinicity,
-  }).then((data) => res.json(data)).catch((err)=>next(err));
+  } = req.body;
+  if (req.isAdmin)
+    VaccineService.createVaccine({
+      siteLocation,
+      serviceName,
+      startDate,
+      endDate,
+      doseType,
+      gender,
+      age: +age,
+      ethinicity,
+    })
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  else return next(new CustomError("unauthorized", StatusCodes.BAD_REQUEST));
 };
-
-export const deleteVaccine = (req: Request, res: Response, next: NextFunction) => {
+export const updateVaccine = (
+  req: IRequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
+  const {
+    siteLocation,
+    serviceName,
+    startDate,
+    endDate,
+    doseType,
+    gender,
+    age,
+    ethinicity,
+  } = req.body;
   const { vaccineId } = req.params;
   if (!vaccineId) {
-    logger.error('date missing');
+    return next(new CustomError("id in url missing", StatusCodes.BAD_REQUEST));
   }
-  VaccineService.deleteVaccine(+vaccineId).then((data) => res.json(data)).catch((err)=>next(err));
+  if (req.isAdmin)
+    VaccineService.updateVaccine({
+      id: +vaccineId,
+      siteLocation,
+      serviceName,
+      startDate,
+      endDate,
+      doseType,
+      gender,
+      age,
+      ethinicity,
+    })
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  else return next(new CustomError("unauthorized", StatusCodes.BAD_REQUEST));
+};
+
+export const deleteVaccine = (
+  req: IRequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
+  const { vaccineId } = req.params;
+  if (!vaccineId) {
+    return next(new CustomError("id in url missing", StatusCodes.BAD_REQUEST));
+  }
+  if (req.isAdmin)
+    VaccineService.deleteVaccine(+vaccineId)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  else return next(new CustomError("unauthorized", StatusCodes.BAD_REQUEST));
 };

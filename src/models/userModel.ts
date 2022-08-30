@@ -19,7 +19,6 @@ class UserAccount {
       .where("email", email)
       .returning("*")
       .first();
-    console.log("ff", user);
     return user;
   }
 

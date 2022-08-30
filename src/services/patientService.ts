@@ -11,18 +11,12 @@ export const getAllPatients = async (): Promise<Success<IPatient[]>> => {
     message: 'all patients fetched successfully. In userService.',
   };
 };
-export const getPatient = async (id: number): Promise<Success<IPatient>> => {
-  logger.info(`getting a patient by id=${id}. In userService`);
-  let user;
-  try {
-    user = await PatientModel.getPatient(+id);
-  } catch {
-    console.log('not found');
-    throw new Error('couldnot get patient')
-  }
+export const getAllPatientsByEmail = async (email:string): Promise<Success<IPatient[]>> => {
+  logger.info('getting all patientsByEmail.');
+  const patients = await PatientModel.getAllPatientsByEmail(email);
   return {
-    data: user,
-    message: 'specified patient by id fetched successfully. In userService.',
+    data: patients,
+    message: 'all patientsByEmail fetched successfully.',
   };
 };
 
@@ -45,6 +39,16 @@ export const updatePatient = async (patient: IPatient): Promise<Success<IPatient
     message: 'Patient updated successfully. In patientService.',
   };
 };
+
+export const updatePatientByTokenEmail = async (body: IPatient): Promise<Success<IPatient>> => {
+  logger.info('updating patientByTokenEmail with of appointmentId='+body.id)
+  const patient = await PatientModel.updatePatientByTokenEmail(body);
+  logger.info('updated a patientByTokenEmail success.');
+  return {
+    data: patient,
+    message: 'Patient updated successfully..',
+  };
+};
 export const deletePatient = async (id: number): Promise<Success<IPatient>> => {
   logger.info(`deleting patient of id=${id}. In userService`);
   const updatedList = await PatientModel.deletePatient(id);
@@ -55,3 +59,13 @@ export const deletePatient = async (id: number): Promise<Success<IPatient>> => {
     message: 'User deleted successfully.Above is remaining data. In userService.',
   };
 };
+
+export const deletePatientByTokenEmail = async (id: number,email:string): Promise<Success<IPatient>> => {
+  logger.info('deleting patientByTokenEmail with of appointmentId='+id+" and of email="+email)
+  const patient = await PatientModel.deletePatientByTokenEmail(id,email);
+  logger.info('deleted a patient successfully.');
+  return {
+    data: patient,
+    message: 'patient deleted successfully.',
+  };
+}
