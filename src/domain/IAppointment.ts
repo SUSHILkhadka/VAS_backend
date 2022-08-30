@@ -1,4 +1,4 @@
-interface Appointment {
+interface IAppointment {
   id: string;
   email: string;
   siteLocation: string;
@@ -7,9 +7,9 @@ interface Appointment {
   firstDoseTime: string;
 }
 
-export default Appointment;
+export default IAppointment;
 
-export interface AppointmentWithoutId {
+export interface IAppointmentToInsert {
   email: string;
   siteLocation: string;
   serviceName: string;

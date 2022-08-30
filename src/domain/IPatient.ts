@@ -1,4 +1,4 @@
-export interface Patient {
+export interface IPatient {
   id: number;
   firstName: string;
   secondName: string;
@@ -13,4 +13,4 @@ export interface Patient {
   insuranceProvider: string;
 }
 
-export type PatientWithoutId = Omit<Patient, 'id'>;
+export type IPatientToInsert= Omit<IPatient, 'id'>;

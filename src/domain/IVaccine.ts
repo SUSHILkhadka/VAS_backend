@@ -1,4 +1,4 @@
-interface Vaccine {
+interface IVaccine {
   id: number;
   serviceName: string;
   siteLocation: string;
@@ -10,5 +10,5 @@ interface Vaccine {
   ethinicity: string;
 }
 
-export type VaccineWithoutId = Omit<Vaccine, 'id'>;
-export default Vaccine;
+export type IVaccineToInsert = Omit<IVaccine, 'id'>;
+export default IVaccine;

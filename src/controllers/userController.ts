@@ -1,42 +1,89 @@
-// basically controller= promise handler
-import { NextFunction, Request, Response } from 'express';
-import logger from '../misc/logger';
-import * as userService from '../services/userService';
+import { NextFunction, Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import IRequestWithTokenData from "../domain/IRequestWithTokenData";
+import CustomError from "../misc/CustomError";
+import * as userService from "../services/userService";
 
-export const getAllUsers = (req: Request, res: Response, next: NextFunction) => {
-  userService.getAllUsers().then((data) => res.json(data));
+export const getAllUsers = (
+  req: IRequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.isAdmin) userService.getAllUsers().then((data) => res.json(data));
+  else if (!req.isAdmin && req.userId)
+    userService
+      .getUser(req.userId)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  else return next(new CustomError("invalid token", StatusCodes.UNAUTHORIZED));
 };
 
 export const getUser = (req: Request, res: Response, next: NextFunction) => {
   const id = req.params.userId;
-  console.log('req.params==', req.params);
-  console.log('id===', id);
-  userService.getUser(+id).then((data) => res.json(data));
+  userService
+    .getUser(+id)
+    .then((data) => res.json(data))
+    .catch((err) => next(err));
 };
-export const login = (req: Request, res: Response, next: NextFunction) => {
-  const { email, password } = req.body;
-  userService.login(email, password).then((data) => res.json(data));
-};
+
 export const createUser = (req: Request, res: Response, next: NextFunction) => {
-  console.log('req.body==', req.body);
-  const { name, email, password } = req.body;
-  console.log('{name,email,password}==', { name, email, password });
-  userService.createUser({ name, email, password }).then((data) => res.json(data));
+  const { name, email, password, isAdmin } = req.body;
+  userService
+    .createUser({ name, email, password, isAdmin })
+    .then((data) => res.json(data))
+    .catch((err) => next(err));
 };
-export const updateUser = (req: Request, res: Response, next: NextFunction) => {
+export const updateUser = (
+  req: IRequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
   const { name, email, password } = req.body;
   const { userId } = req.params;
-  if (!userId || !name || !email || !password) {
-    logger.error('data missing');
+  if (!name || !email || !password) {
+    return next(
+      new CustomError(
+        "name,email,password,userId is required",
+        StatusCodes.BAD_REQUEST
+      )
+    );
   }
-  userService.updateUser({ name, email, id: +userId, password }).then((data) => res.json(data));
+  if (req.isAdmin) {
+    userService
+      .updateUser({ name, email, id: +userId, password })
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  } else {
+    if (req.userId)
+      userService
+        .updateUser({ name, email, id: +req.userId, password })
+        .then((data) => res.json(data))
+        .catch((err) => next(err));
+    else {
+      return next(new CustomError("invalid token", StatusCodes.BAD_REQUEST));
+    }
+  }
 };
 
-export const deleteUser = (req: Request, res: Response, next: NextFunction) => {
+export const deleteUser = (
+  req: IRequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
   const { userId } = req.params;
-
-  if (!userId) {
-    logger.error('data missing');
+  if (!req.isAdmin) {
+    userService
+      .deleteUser(+userId)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  } else {
+    if (req.userId)
+      userService
+        .deleteUser(+req.userId)
+        .then((data) => res.json(data))
+        .catch((err) => next(err));
+    else {
+      return next(new CustomError("invalid token", StatusCodes.BAD_REQUEST));
+    }
   }
-  userService.deleteUser(+userId).then((data) => res.json(data));
 };

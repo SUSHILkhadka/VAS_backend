@@ -1,18 +1,34 @@
-// basically controller= promise handler
-import { NextFunction, Request, Response } from 'express';
-import logger from '../misc/logger';
-import * as patientService from '../services/patientService';
+import { NextFunction, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import IRequestWithTokenData from "../domain/IRequestWithTokenData";
+import RequestWithTokenData from "../domain/IRequestWithTokenData";
+import CustomError from "../misc/CustomError";
+import * as patientService from "../services/patientService";
 
-export const getAllPatients = (req: Request, res: Response, next: NextFunction) => {
-  patientService.getAllPatients().then((data) => res.json(data));
+export const getAllPatients = (
+  req: RequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.isAdmin) {
+    patientService
+      .getAllPatients()
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  } else if (req.email) {
+    patientService
+      .getAllPatientsByEmail(req.email)
+      .then((data) => res.json(data));
+  } else {
+    return next(new CustomError("not authorized", StatusCodes.UNAUTHORIZED));
+  }
 };
 
-export const getPatient = (req: Request, res: Response, next: NextFunction) => {
-  const id = req.params.patientId;
-  patientService.getPatient(+id).then((data) => res.json(data));
-};
-
-export const createPatient = (req: Request, res: Response, next: NextFunction) => {
+export const createPatient = (
+  req: IRequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
   const {
     firstName,
     secondName,
@@ -26,19 +42,6 @@ export const createPatient = (req: Request, res: Response, next: NextFunction) =
     paymentMethod,
     insuranceProvider,
   } = req.body;
-  console.log('{name,email,password}==', {
-    firstName,
-    secondName,
-    birthDate,
-    ethnicity,
-    gender,
-    email,
-    addressState,
-    addressCity,
-    addressStreet,
-    paymentMethod,
-    insuranceProvider,
-  });
   patientService
     .createPatient({
       firstName,
@@ -46,17 +49,22 @@ export const createPatient = (req: Request, res: Response, next: NextFunction) =
       birthDate,
       ethnicity,
       gender,
-      email,
+      email: req.isAdmin ? email : req.email,
       addressState,
       addressCity,
       addressStreet,
       paymentMethod,
       insuranceProvider,
     })
-    .then((data) => res.json(data));
+    .then((data) => res.json(data))
+    .catch((err) => next(err));
 };
 
-export const updatePatient = (req: Request, res: Response, next: NextFunction) => {
+export const updatePatient = (
+  req: RequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
   const {
     firstName,
     secondName,
@@ -70,33 +78,73 @@ export const updatePatient = (req: Request, res: Response, next: NextFunction) =
     paymentMethod,
     insuranceProvider,
   } = req.body;
+
   const { patientId } = req.params;
-  if (!patientId || !firstName || !email) {
-    logger.error('data missing');
+  if (!patientId || !firstName || !email || (!req.isAdmin && req.userId)) {
+    return next(
+      new CustomError("required data fields missing", StatusCodes.BAD_REQUEST)
+    );
   }
-  patientService
-    .updatePatient({
-      id: +patientId,
-      firstName,
-      secondName,
-      birthDate,
-      ethnicity,
-      gender,
-      email,
-      addressState,
-      addressCity,
-      addressStreet,
-      paymentMethod,
-      insuranceProvider,
-    })
-    .then((data) => res.json(data));
+  if (req.isAdmin) {
+    patientService
+      .updatePatient({
+        id: +patientId,
+        firstName,
+        secondName,
+        birthDate,
+        ethnicity,
+        gender,
+        email,
+        addressState,
+        addressCity,
+        addressStreet,
+        paymentMethod,
+        insuranceProvider,
+      })
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  } else if (req.email) {
+    patientService
+      .updatePatientByTokenEmail({
+        id: +patientId,
+        firstName,
+        secondName,
+        birthDate,
+        ethnicity,
+        gender,
+        email: req.email,
+        addressState,
+        addressCity,
+        addressStreet,
+        paymentMethod,
+        insuranceProvider,
+      })
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  } else {
+    return next(new CustomError("invalid request", StatusCodes.BAD_REQUEST));
+  }
 };
 
-export const deletePatient = (req: Request, res: Response, next: NextFunction) => {
+export const deletePatient = (
+  req: IRequestWithTokenData,
+  res: Response,
+  next: NextFunction
+) => {
   const { patientId } = req.params;
 
-  if (!patientId) {
-    logger.error('data missing');
+  if (req.isAdmin && !patientId) {
+    return next(new CustomError("id in url missing", StatusCodes.BAD_REQUEST));
   }
-  patientService.deletePatient(+patientId).then((data) => res.json(data));
+  if (req.isAdmin)
+    patientService
+      .deletePatient(+patientId)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  else if (req.email)
+    patientService
+      .deletePatientByTokenEmail(+patientId, req.email)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  else return next(new CustomError("invalid request", StatusCodes.BAD_REQUEST));
 };
