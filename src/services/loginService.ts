@@ -2,7 +2,10 @@ import StatusCodes from "http-status-codes";
 import UserModel from "../models/userModel";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { EXPIRY_TIME, EXPIRY_TIME_FOR_REFRESH_TOKEN } from "../constants/common";
+import {
+  EXPIRY_TIME,
+  EXPIRY_TIME_FOR_REFRESH_TOKEN,
+} from "../constants/common";
 import dotenv from "dotenv";
 import User from "../models/userModel";
 import CustomError from "../misc/CustomError";
@@ -10,9 +13,7 @@ import RefreshTokenModel from "../models/refreshTokenModel";
 import { IDataInToken } from "../domain/IRequestWithTokenData";
 import { ITokens } from "../domain/ITokens";
 import IRefreshToken from "../domain/IRefreshToken";
-
 dotenv.config();
-
 /**
  *
  * @param email valid email as string
@@ -31,7 +32,6 @@ export const login = async (
   if (!isPasswordMatch) {
     throw new CustomError("wrong password", StatusCodes.UNAUTHORIZED);
   }
-
   //valid user
   const accessToken = jwt.sign(
     { id: user.id, isAdmin: user.isAdmin, email: user.email },
@@ -65,7 +65,6 @@ export const login = async (
  * @param refreshToken valid refreshtoken for getting new accesstoken after access toekn is expired
  * @returns new access token with new expiry time
  */
-
 export const getNewAccessToken = async (
   refreshToken: string
 ): Promise<ITokens<IDataInToken>> => {
@@ -81,13 +80,13 @@ export const getNewAccessToken = async (
   }
 
   try {
-    const dataAtToken = ( jwt.verify(
+    const dataAtToken = jwt.verify(
       refreshToken,
       process.env.JWT_TOKEN_SECRET as string
-    )) as IDataInToken;
-    const { userId,email, isAdmin } = dataAtToken;
+    ) as IDataInToken;
+    const { userId, email, isAdmin } = dataAtToken;
     const newAccessToken = jwt.sign(
-      { userId,email, isAdmin },
+      { userId, email, isAdmin },
       process.env.JWT_SECRET as string,
       { expiresIn: EXPIRY_TIME }
     );
@@ -98,9 +97,7 @@ export const getNewAccessToken = async (
       message: "got new accessToken successfully",
     };
   } catch {
-    throw new CustomError(
-      "invalid refresh Token",StatusCodes.UNAUTHORIZED
-    );
+    throw new CustomError("invalid refresh Token", StatusCodes.UNAUTHORIZED);
   }
 };
 

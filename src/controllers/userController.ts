@@ -4,20 +4,6 @@ import IRequestWithTokenData from "../domain/IRequestWithTokenData";
 import CustomError from "../misc/CustomError";
 import * as userService from "../services/userService";
 
-export const getAllUsers = (
-  req: IRequestWithTokenData,
-  res: Response,
-  next: NextFunction
-) => {
-  if (req.isAdmin) userService.getAllUsers().then((data) => res.json(data));
-  else if (!req.isAdmin && req.userId)
-    userService
-      .getUser(req.userId)
-      .then((data) => res.json(data))
-      .catch((err) => next(err));
-  else return next(new CustomError("invalid token", StatusCodes.UNAUTHORIZED));
-};
-
 export const getUser = (req: Request, res: Response, next: NextFunction) => {
   const id = req.params.userId;
   userService
@@ -33,6 +19,7 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
     .then((data) => res.json(data))
     .catch((err) => next(err));
 };
+
 export const updateUser = (
   req: IRequestWithTokenData,
   res: Response,

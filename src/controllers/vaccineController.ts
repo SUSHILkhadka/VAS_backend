@@ -12,6 +12,7 @@ export const getAllVaccines = (
     .then((data) => res.json(data))
     .catch((err) => next(err));
 };
+
 export const createVaccine = (
   req: IRequestWithTokenData,
   res: Response,
@@ -42,6 +43,7 @@ export const createVaccine = (
       .catch((err) => next(err));
   else return next(new CustomError("unauthorized", StatusCodes.BAD_REQUEST));
 };
+
 export const updateVaccine = (
   req: IRequestWithTokenData,
   res: Response,
