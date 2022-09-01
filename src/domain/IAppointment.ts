@@ -5,14 +5,11 @@ interface IAppointment {
   serviceName: string;
   firstDoseDate: string;
   firstDoseTime: string;
+  secondDoseDate: string;
+  secondDoseTime: string;
+  patientId: number;
 }
 
 export default IAppointment;
 
-export interface IAppointmentToInsert {
-  email: string;
-  siteLocation: string;
-  serviceName: string;
-  firstDoseDate: string;
-  firstDoseTime: string;
-}
+export type IAppointmentToInsert = Omit<IAppointment, 'id'>;
