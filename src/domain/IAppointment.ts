@@ -7,8 +7,9 @@ interface IAppointment {
   firstDoseTime: string;
   secondDoseDate: string;
   secondDoseTime: string;
+  patientId: number;
 }
 
 export default IAppointment;
 
-export type IAppointmentToInsert=Omit<IAppointment,'id'>
+export type IAppointmentToInsert = Omit<IAppointment, 'id'>;

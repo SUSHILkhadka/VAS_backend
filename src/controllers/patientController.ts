@@ -1,34 +1,22 @@
-import { NextFunction, Response } from "express";
-import { StatusCodes } from "http-status-codes";
-import IRequestWithTokenData from "../domain/IRequestWithTokenData";
-import RequestWithTokenData from "../domain/IRequestWithTokenData";
-import CustomError from "../misc/CustomError";
-import * as patientService from "../services/patientService";
+import { NextFunction, Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import IRequestWithTokenData from '../domain/IRequestWithTokenData';
+import RequestWithTokenData from '../domain/IRequestWithTokenData';
+import CustomError from '../misc/CustomError';
+import * as patientService from '../services/patientService';
 
-export const getAllPatients = (
-  req: RequestWithTokenData,
-  res: Response,
-  next: NextFunction
-) => {
+export const getAllPatients = (req: RequestWithTokenData, res: Response, next: NextFunction) => {
   if (req.isAdmin) {
     patientService
       .getAllPatients()
       .then((data) => res.json(data))
       .catch((err) => next(err));
-  } else if (req.email) {
-    patientService
-      .getAllPatientsByEmail(req.email)
-      .then((data) => res.json(data));
   } else {
-    return next(new CustomError("not authorized", StatusCodes.UNAUTHORIZED));
+    return next(new CustomError('not authorized', StatusCodes.UNAUTHORIZED));
   }
 };
 
-export const createPatient = (
-  req: IRequestWithTokenData,
-  res: Response,
-  next: NextFunction
-) => {
+export const createPatient = (req: Request, res: Response, next: NextFunction) => {
   const {
     firstName,
     secondName,
@@ -41,7 +29,7 @@ export const createPatient = (
     addressStreet,
     paymentMethod,
     insuranceProvider,
-    photoUrl
+    photoUrl,
   } = req.body;
   patientService
     .createPatient({
@@ -50,24 +38,19 @@ export const createPatient = (
       birthDate,
       ethnicity,
       gender,
-      email: req.isAdmin ? email : req.email,
+      email: email,
       addressState,
       addressCity,
       addressStreet,
       paymentMethod,
       insuranceProvider,
-      photoUrl
-
+      photoUrl,
     })
     .then((data) => res.json(data))
     .catch((err) => next(err));
 };
 
-export const updatePatient = (
-  req: RequestWithTokenData,
-  res: Response,
-  next: NextFunction
-) => {
+export const updatePatient = (req: RequestWithTokenData, res: Response, next: NextFunction) => {
   const {
     firstName,
     secondName,
@@ -80,14 +63,12 @@ export const updatePatient = (
     addressStreet,
     paymentMethod,
     insuranceProvider,
-    photoUrl
+    photoUrl,
   } = req.body;
 
   const { patientId } = req.params;
   if (!patientId || !firstName || !email || (!req.isAdmin && req.userId)) {
-    return next(
-      new CustomError("required data fields missing", StatusCodes.BAD_REQUEST)
-    );
+    return next(new CustomError('required data fields missing', StatusCodes.BAD_REQUEST));
   }
   if (req.isAdmin) {
     patientService
@@ -104,53 +85,25 @@ export const updatePatient = (
         addressStreet,
         paymentMethod,
         insuranceProvider,
-        photoUrl
-      })
-      .then((data) => res.json(data))
-      .catch((err) => next(err));
-  } else if (req.email) {
-    patientService
-      .updatePatientByTokenEmail({
-        id: +patientId,
-        firstName,
-        secondName,
-        birthDate,
-        ethnicity,
-        gender,
-        email: req.email,
-        addressState,
-        addressCity,
-        addressStreet,
-        paymentMethod,
-        insuranceProvider,
-        photoUrl
+        photoUrl,
       })
       .then((data) => res.json(data))
       .catch((err) => next(err));
   } else {
-    return next(new CustomError("invalid request", StatusCodes.BAD_REQUEST));
+    return next(new CustomError('not authorized', StatusCodes.UNAUTHORIZED));
   }
 };
 
-export const deletePatient = (
-  req: IRequestWithTokenData,
-  res: Response,
-  next: NextFunction
-) => {
+export const deletePatient = (req: IRequestWithTokenData, res: Response, next: NextFunction) => {
   const { patientId } = req.params;
 
   if (req.isAdmin && !patientId) {
-    return next(new CustomError("id in url missing", StatusCodes.BAD_REQUEST));
+    return next(new CustomError('id in url missing', StatusCodes.BAD_REQUEST));
   }
   if (req.isAdmin)
     patientService
       .deletePatient(+patientId)
       .then((data) => res.json(data))
       .catch((err) => next(err));
-  else if (req.email)
-    patientService
-      .deletePatientByTokenEmail(+patientId, req.email)
-      .then((data) => res.json(data))
-      .catch((err) => next(err));
-  else return next(new CustomError("invalid request", StatusCodes.BAD_REQUEST));
+  else return next(new CustomError('not authorized', StatusCodes.UNAUTHORIZED));
 };

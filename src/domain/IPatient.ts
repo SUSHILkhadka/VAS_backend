@@ -11,7 +11,7 @@ export interface IPatient {
   addressStreet: string;
   paymentMethod: string;
   insuranceProvider: string;
-  photoUrl:string;
+  photoUrl: string;
 }
 
-export type IPatientToInsert= Omit<IPatient, 'id'>;
+export type IPatientToInsert = Omit<IPatient, 'id'>;

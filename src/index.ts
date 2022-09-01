@@ -1,4 +1,4 @@
-import express, { Application} from 'express';
+import express, { Application } from 'express';
 import logger from './misc/logger';
 import appRouter from './routes/index';
 import dotenv from 'dotenv';
